@@ -32,16 +32,14 @@
           </div>
           <div v-if="result" class="row mt-4">
             <div class="col-lg-6 ml-auto mr-auto">
-              <div>
-                <p>{{result}}</p>
-                <div>You can spend these in the following countries:
-                  <ul v-for="(country, index) in countries" :key="index" class="list-group list-group-flush">
-                    <li class="list-group-item">
-                      <span>{{country.name}}</span> &nbsp;
-                      <img :src="country.flag" alt="" width="50px" height="30px">
-                    </li>
-                  </ul>
-                </div>
+              <p>{{result}}</p>
+              <div>You can spend these in the following countries:
+              <ul v-for="(country, index) in countries" :key="index" class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <span>{{country.name}}</span> &nbsp;
+                  <img :src="country.flag" alt="" width="50px" height="30px">
+                </li>
+              </ul>
               </div>
             </div>
           </div>
