@@ -33,6 +33,36 @@
           <div v-if="result" class="row mt-4">
             <div class="col-lg-6 ml-auto mr-auto">
               <p>{{result}}</p>
+              <!-- <div>You can spend these in the following countries:
+              <ul v-for="(country, index) in countries" :key="index" class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <span>{{country.name}}</span> &nbsp;
+                  <img :src="country.flag" alt="" width="50px" height="30px">
+                </li>
+              </ul>
+              </div> -->
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="mt-4">
+                <gmap-map
+                  :center="center"
+                  :zoom="7"
+                  style="width:100%;  height: 400px;">
+                  <gmap-marker
+                    :key="index"
+                    v-for="(m, index) in markers"
+                    :position="m.position"
+                    :clickable="true"
+                    :draggable="true"
+                    @click="center = m.position"
+                    @dragend="locationChanged">
+                  </gmap-marker>
+                </gmap-map>
+              </div>
+            </div>
+            <div class="col-lg-6" v-if="result">
               <div>You can spend these in the following countries:
               <ul v-for="(country, index) in countries" :key="index" class="list-group list-group-flush">
                 <li class="list-group-item">
@@ -42,6 +72,10 @@
               </ul>
               </div>
             </div>
+          </div>
+          <div class="mt-4 mb-4" style="display:flex">
+            <input :disabled="true" type="text"  v-model.trim="center.lat" class="form-control mr-3"/>
+            <input :disabled="true" type="text" v-model.trim="center.lng" class="form-control ml-3"/>
           </div>
         </div>
       </div>
@@ -72,8 +106,18 @@ export default {
         currency_to: false,
         currency_to_err: false,
         amount: false,
-      }
+      },
+      center: { lat: 21.073191363941568, lng: 105.77363744221952 },
+      markers: [
+        { position: { lat: 21.073191363941568, lng: 105.77363744221952 } },
+      ],
+      places: [],
+      currentPlace: null
     };
+  },
+
+  mounted() {
+    this.geolocate();
   },
 
   created() {
@@ -97,6 +141,18 @@ export default {
       const countries = await this.getCountries(toCurrency);
       this.countries = countries;
 
+      for (let i = 0; i <  this.countries.length; i++) {
+        if(this.countries[i].latlng) {
+          this.markers.push(
+            {
+              position: {
+                lat: this.countries[i].latlng[0],
+                lng: this.countries[i].latlng[1]
+              }
+            }
+          )
+        }
+      }
       const convertedAmount = (this.amount * exchangeRate).toFixed(4);
 
       this.result = `${this.amount} ${fromCurrency} is worth ${convertedAmount} ${toCurrency}`;
@@ -146,7 +202,22 @@ export default {
       if (this.currency_from && this.currency_to) {
         [this.currency_from, this.currency_to] = [this.currency_to, this.currency_from];
       }
-    }
+    },
+
+    geolocate() {
+      navigator.geolocation.getCurrentPosition(position => {
+        this.center = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+      });
+    },
+
+    locationChanged(event) {
+      this.center.lat = event.latLng.lat()
+      this.center.lng = event.latLng.lng()
+    },
+
   }
 };
 </script>
