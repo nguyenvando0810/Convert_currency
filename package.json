@@ -12,6 +12,7 @@
     "core-js": "^2.6.5",
     "element-ui": "^2.11.1",
     "vue": "^2.6.10",
+    "vue-google-login": "^2.0.2",
     "vue2-google-maps": "^0.10.7"
   },
   "devDependencies": {

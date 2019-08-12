@@ -33,14 +33,6 @@
           <div v-if="result" class="row mt-4">
             <div class="col-lg-6 ml-auto mr-auto">
               <p>{{result}}</p>
-              <!-- <div>You can spend these in the following countries:
-              <ul v-for="(country, index) in countries" :key="index" class="list-group list-group-flush">
-                <li class="list-group-item">
-                  <span>{{country.name}}</span> &nbsp;
-                  <img :src="country.flag" alt="" width="50px" height="30px">
-                </li>
-              </ul>
-              </div> -->
             </div>
           </div>
           <div class="row">
@@ -77,16 +69,26 @@
             <input :disabled="true" type="text"  v-model.trim="center.lat" class="form-control mr-3"/>
             <input :disabled="true" type="text" v-model.trim="center.lng" class="form-control ml-3"/>
           </div>
+          <GoogleLogin :params="params" :onSuccess="onSuccess">Login</GoogleLogin>
+          <a href="javascript:void(0)" @click="signOut();">Sign out</a>
+            <p v-if="user.name">Name: {{ user.name }}</p>
+            <p v-if="user.avatar">Avatar: <img :src="user.avatar" alt=""></p>
+            <p v-if="user.email">Email: {{ user.email }}</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script>
 import axios from "axios";
+import GoogleLogin from 'vue-google-login';
+
 export default {
   name: "Currency",
+  components: {
+    GoogleLogin
+  },
   props: {
     msg: String
   },
@@ -108,11 +110,23 @@ export default {
         amount: false,
       },
       center: { lat: 21.073191363941568, lng: 105.77363744221952 },
-      markers: [
-        { position: { lat: 21.073191363941568, lng: 105.77363744221952 } },
-      ],
+      markers: [],
       places: [],
-      currentPlace: null
+      currentPlace: null,
+      params: {
+        client_id: "655692217470-gn753gh6qih6r10qrkoh05qg6hrmt80n.apps.googleusercontent.com"
+      },
+      renderParams: {
+        width: 250,
+        height: 50,
+        longtitle: true
+      },
+      user: {
+        id: '',
+        name: '',
+        avatar: '',
+        email:''
+      }
     };
   },
 
@@ -125,11 +139,29 @@ export default {
   },
 
   methods: {
+    onSuccess(googleUser) {
+      const profile = googleUser.getBasicProfile();
+      this.user.id = profile.getId()
+      this.user.name = profile.getName()
+      this.user.avatar = profile.getImageUrl()
+      this.user.email = profile.getEmail()
+    },
+
+    signOut() {
+      const auth2 = window.gapi.auth2.getAuthInstance();
+      auth2.signOut().then( () => {
+        this.user.id = ''
+        this.user.name = ''
+        this.user.avatar = ''
+        this.user.email = ''
+      });
+    },
+
     async convert_currency() {
       this.handleCurrencyFrom()
       this.handleCurrencyTo()
       this.handleAmount()
-
+      this.markers= []
       if (this.message.currency_from || this.message.currency_to || this.message.amount) {
         return false
       }
